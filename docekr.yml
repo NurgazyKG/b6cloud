@@ -1,0 +1,72 @@
+- hosts: app
+  tasks:
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      when:
+        - ansible_facts['distribution'] == "Ubuntu"
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+      when:
+        - ansible_facts['distribution'] == "Ubuntu"
+
+    - name: apt update
+      apt:
+        update_cache: yes
+      when:
+        - ansible_facts['distribution'] == "Ubuntu"
+
+    - name: docker install
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+      when:
+        - ansible_facts['distribution'] == "Ubuntu"
+
+    - name: start docker
+      service:
+          name: docker
+          state: started
+      when:
+        - ansible_facts['distribution'] == "Ubuntu"
+
+    - name: add docker repo
+      shell: "yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo"
+      when:
+        - ansible_facts['distribution'] == "CentOS"
+
+    - name: install docker
+      yum:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+      when:
+        - ansible_facts['distribution'] == "CentOS"
+
+    - name: start docker
+      service:
+          name: docker
+          state: started
+      when:
+        - ansible_facts['distribution'] == "CentOS"
+
+- hosts: database
+  vars:
+    version_postgres: postgresql-14
+  tasks:
+    - name: postgres install
+      apt:
+        name:
+          - "{{ version_postgres }}"
+ 
